@@ -1,0 +1,11 @@
+import { chromium } from 'playwright';
+const browser = await chromium.launch();
+const page = await browser.newPage({ viewport: { width: 900, height: 400 } });
+const errors = [];
+page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+page.on('pageerror', e => errors.push(String(e)));
+await page.goto('http://localhost:5183/preview.html', { waitUntil: 'networkidle' });
+await page.waitForTimeout(300);
+await page.screenshot({ path: 'C:/Users/Peter/AppData/Local/Temp/claude/e--Code-React-sight-read-music-trainer/11af0a85-c605-4008-b973-d4ec5fb848d1/scratchpad/preview.png' });
+console.log('errors:', JSON.stringify(errors));
+await browser.close();
