@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AudioCapture, type CaptureStatus } from '../audio/audioCapture'
-import { toNote } from '../audio/noteMapper'
+import { A4_HZ, toNote } from '../audio/noteMapper'
 import type { NoteReading } from '../audio/types'
 
 /**
@@ -20,19 +20,23 @@ export interface UseAudioPitch {
   stop: () => void
 }
 
-export function useAudioPitch(): UseAudioPitch {
+/** @param a4Hz Calibration reference pitch — see {@link calibratedA4Hz}. Defaults to standard 440. */
+export function useAudioPitch(a4Hz: number = A4_HZ): UseAudioPitch {
   const [status, setStatus] = useState<CaptureStatus>('idle')
   const [error, setError] = useState<Error | null>(null)
   const [note, setNote] = useState<NoteReading | null>(null)
 
   const captureRef = useRef<AudioCapture | null>(null)
   const staleTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Read fresh each frame without recreating AudioCapture (and dropping the mic) on every slider tick.
+  const a4HzRef = useRef(a4Hz)
+  a4HzRef.current = a4Hz
 
   const getCapture = useCallback((): AudioCapture => {
     if (!captureRef.current) {
       captureRef.current = new AudioCapture({
         onReading: ({ hz, clarity }) => {
-          const reading = toNote(hz, clarity)
+          const reading = toNote(hz, clarity, { a4Hz: a4HzRef.current })
           if (!reading) return
           setNote(reading)
           if (staleTimer.current) clearTimeout(staleTimer.current)

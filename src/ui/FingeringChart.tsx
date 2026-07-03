@@ -4,6 +4,12 @@ import type { InstrumentId } from '../config/instruments'
 import { DIAGRAM_VIEWBOX, DIVIDER_Y, KEY_POSITIONS } from './fingeringLayout'
 
 /**
+ * @deprecated Unused. Replaced by {@link ../ui/FingeringDiagram}, which
+ * composites real fingering-chart artwork instead of drawing hand-placed
+ * SVG circles. Kept around rather than deleted.
+ */
+
+/**
  * Rendered fingering diagram for the note being played, built from
  * {@link keysForConcertNote} rather than a static per-note image. In the POC
  * this is always on (no reveal delay — that's the MVP's core learning

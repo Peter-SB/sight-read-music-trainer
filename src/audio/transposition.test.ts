@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { forDisplay, toConcertNoteName } from './transposition'
+import {
+  concertPitchClassToWritten,
+  concertToWrittenNoteName,
+  forDisplay,
+  toConcertNoteName,
+  writtenPitchClassToConcert,
+} from './transposition'
 import { toNote } from './noteMapper'
 import type { NoteReading } from './types'
 
@@ -46,5 +52,38 @@ describe('toConcertNoteName (round-trip for fingering lookup)', () => {
 
   it('returns null for an unparseable note name', () => {
     expect(toConcertNoteName('???', 'tenor_sax')).toBeNull()
+  })
+})
+
+describe('concertToWrittenNoteName', () => {
+  it('matches forDisplay for a concert note (tenor +14)', () => {
+    expect(concertToWrittenNoteName('C4', 'tenor_sax')).toBe('D5')
+  })
+
+  it('matches forDisplay for a concert note (alto +9)', () => {
+    expect(concertToWrittenNoteName('C4', 'alto_sax')).toBe('A4')
+  })
+
+  it('returns null for an unparseable note name', () => {
+    expect(concertToWrittenNoteName('???', 'tenor_sax')).toBeNull()
+  })
+})
+
+describe('writtenPitchClassToConcert', () => {
+  it('resolves a tenor player\'s written D to concert C', () => {
+    expect(writtenPitchClassToConcert('D', 'tenor_sax')).toBe('C')
+  })
+
+  it('resolves an alto player\'s written A to concert C', () => {
+    expect(writtenPitchClassToConcert('A', 'alto_sax')).toBe('C')
+  })
+
+  it('round-trips with concertPitchClassToWritten', () => {
+    expect(concertPitchClassToWritten('C', 'tenor_sax')).toBe('D')
+    expect(writtenPitchClassToConcert('D', 'tenor_sax')).toBe('C')
+  })
+
+  it('returns null for an unparseable pitch class', () => {
+    expect(writtenPitchClassToConcert('???', 'tenor_sax')).toBeNull()
   })
 })

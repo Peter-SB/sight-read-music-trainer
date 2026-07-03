@@ -23,14 +23,16 @@ The primary use case is solo practice: scale drills and random-note drills where
 - Needle/meter widget showing tuning accuracy (flat/sharp, in cents)
 - Note detection display: shows the note currently being heard
 - Scale mode: walks through a selected scale (e.g., Bb concert major on alto), advances automatically when the correct note is held in tune for a short duration
-- Random-note mode: flashes a target note, advances on correct match
 - Fingering chart display, with a configurable reveal delay (0s = always on, 1–3s = delayed, off = never shown)
-- Sheet-note (single note on a mini staff) display, same delay option, independent of fingering delay
-- Basic session settings: instrument transposition (Eb alto/bari vs Bb tenor/soprano vs concert C), note range, tempo/hold-time for "correct" registration
+- Basic session settings: instrument transposition (Eb alto/bari vs Bb tenor/soprano vs concert C), note range, tempo/hold-time for "correct" registration, fingering delay
+- See all notes and fingers page
+- Scales selection page. See all scales notes and fingering. Click to start a drill with that scale
 
 ### v1.5 / stretch
 - Tone-quality indicator (secondary to pitch: stability/steadiness over the hold, not a full timbre grade)
 - Practice history: which notes/scales are consistently late or wrong
+- Sheet-note (single note on a mini staff) display, same delay option, independent of fingering delay
+- Random-note mode: flashes a target note, advances on correct match
 - Randomized "flash then hide" mode: note flashes for a fixed time and disappears before you play, forcing pure recall
 - Custom scale/interval builder (e.g., practice thirds, arpeggios, chromatic runs)
 - Adjustable "in tune" tolerance (cents window) for progressive difficulty

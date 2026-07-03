@@ -1,4 +1,5 @@
 import type { NoteReading } from '../audio/types'
+import { formatNoteNameForDisplay } from '../audio/noteMapper'
 import { forDisplay } from '../audio/transposition'
 import type { InstrumentId } from '../config/instruments'
 
@@ -37,11 +38,11 @@ export function NoteDisplay({ note, instrument, listening }: NoteDisplayProps) {
 
   return (
     <div className="note-display">
-      <span className="note-name">{formatNoteName(written.noteName)}</span>
+      <span className="note-name">{formatNoteNameForDisplay(written.noteName)}</span>
       <span className="note-detail">
         <span className={centsClass(written.cents)}>{centsLabel}</span>
         <span className="note-detail__sep">·</span>
-        concert {formatNoteName(note.noteName)}
+        concert {formatNoteNameForDisplay(note.noteName)}
       </span>
     </div>
   )
@@ -50,9 +51,4 @@ export function NoteDisplay({ note, instrument, listening }: NoteDisplayProps) {
 function centsClass(cents: number): string {
   if (Math.abs(cents) <= 5) return 'cents cents--in-tune'
   return cents > 0 ? 'cents cents--sharp' : 'cents cents--flat'
-}
-
-/** Render a trailing "b" as a proper flat sign for display. */
-function formatNoteName(name: string): string {
-  return name.replace('b', '♭').replace('#', '♯')
 }

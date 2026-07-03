@@ -54,6 +54,26 @@ export function midiToHz(midi: number, a4Hz: number = A4_HZ): number {
   return a4Hz * 2 ** ((midi - A4_MIDI) / 12)
 }
 
+/**
+ * Widest calibration offset the UI allows, in cents. 100¢ = a full semitone —
+ * enough to cover badly-transposing setups. (At offsets past ±50¢ the reference
+ * shift can start pulling a played note toward the neighbouring semitone during
+ * normal use; that's the trade-off for the wider range.)
+ */
+export const MAX_CALIBRATION_CENTS = 100
+
+/**
+ * Reference A4 (Hz) to feed {@link toNote}/{@link hzToMidi} to correct for a
+ * mic/interface that consistently reads a little sharp or flat. `offsetCents`
+ * is user-facing and small (±{@link MAX_CALIBRATION_CENTS}) — positive shifts
+ * readings sharper, negative flatter — implemented as a shift of the analysis
+ * reference pitch rather than a post-hoc add to `cents`, so it also nudges
+ * which note counts as "nearest" consistently instead of just the display.
+ */
+export function calibratedA4Hz(offsetCents: number, baseA4Hz: number = A4_HZ): number {
+  return baseA4Hz * 2 ** (-offsetCents / 1200)
+}
+
 /** Build a note name like "Bb3" from an integer MIDI note number. */
 export function midiToNoteName(midi: number): string {
   const { pitchClass, octave } = midiToParts(midi)
@@ -65,6 +85,28 @@ function midiToParts(midi: number): { pitchClass: string; octave: number } {
   const pc = ((midi % 12) + 12) % 12
   const octave = Math.floor(midi / 12) - 1
   return { pitchClass: PITCH_CLASSES[pc], octave }
+}
+
+/** Flat spellings, as produced by {@link midiToNoteName}, mapped to their sharp equivalent. */
+const FLAT_TO_SHARP: Record<string, string> = {
+  Db: 'C#',
+  Eb: 'D#',
+  Gb: 'F#',
+  Ab: 'G#',
+  Bb: 'A#',
+}
+
+/**
+ * Render a note name for display with sharps rather than flats (e.g. "Gb4" ->
+ * "F#4"), using a proper ♯ glyph. Internal note names stay flat-spelled to
+ * match the fingering-chart data; this is purely a display-layer concern.
+ */
+export function formatNoteNameForDisplay(noteName: string): string {
+  const match = /^([A-Ga-g][b#]?)(-?\d+)$/.exec(noteName)
+  if (!match) return noteName
+  const [, pitchClass, octave] = match
+  const sharpPitchClass = FLAT_TO_SHARP[pitchClass] ?? pitchClass
+  return `${sharpPitchClass}${octave}`.replace('#', '♯')
 }
 
 /**

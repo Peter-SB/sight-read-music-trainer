@@ -11,6 +11,7 @@ describe('keysForWrittenNote', () => {
       'R2',
       'R3',
       'lpBb',
+      'rpC',
     ])
   })
 

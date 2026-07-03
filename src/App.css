@@ -57,7 +57,9 @@
   background: var(--accent-bg);
   color: var(--accent);
   cursor: pointer;
-  transition: background 0.15s ease, opacity 0.15s ease;
+  transition:
+    background 0.15s ease,
+    opacity 0.15s ease;
 }
 
 .mic-button:hover:not(:disabled) {
@@ -179,6 +181,590 @@
   text-align: center;
   padding: 8px;
   box-sizing: border-box;
+}
+
+.fingering-diagram {
+  position: relative;
+  height: 100%;
+  max-width: 100%;
+  /* aspect-ratio set inline from IMAGE_ASPECT_RATIO so it can't drift from the art */
+}
+
+.fingering-diagram__layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.fingering-diagram__key {
+  fill: #ff1212;
+  /* stroke: #d93434; */
+  stroke-width: 1.5;
+  filter: drop-shadow(0 0 6px #ff1212);
+}
+
+/* Home nav ---------------------------------------------------------------- */
+.home-nav {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.home-nav button {
+  font: inherit;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--code-bg);
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.link-button {
+  font: inherit;
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  padding: 0;
+}
+
+/* Needle meter ------------------------------------------------------------ */
+.needle-meter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.needle-meter__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.needle-meter__note {
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--text-h);
+  min-width: 1.5em;
+  text-align: right;
+}
+
+.needle-meter__dial {
+  width: 220px;
+  height: 121px;
+}
+
+.needle-meter__arc {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.needle-meter__tick {
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.needle-meter__needle {
+  stroke: var(--text-h);
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: transform 0.1s ease-out;
+}
+
+.needle-meter__pivot {
+  fill: var(--text-h);
+}
+
+.needle-meter__label {
+  font-size: 15px;
+  color: var(--text);
+}
+
+.needle-meter--in-tune .needle-meter__needle {
+  stroke: #35c46a;
+}
+.needle-meter--sharp .needle-meter__needle {
+  stroke: #e0a565;
+}
+.needle-meter--flat .needle-meter__needle {
+  stroke: #6592e0;
+}
+
+.needle-meter--in-tune .needle-meter__note {
+  color: #35c46a;
+}
+.needle-meter--sharp .needle-meter__note {
+  color: #e0a565;
+}
+.needle-meter--flat .needle-meter__note {
+  color: #6592e0;
+}
+
+/* Tuning calibration slider ----------------------------------------------- */
+.tuning-slider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.tuning-slider__input {
+  width: 140px;
+}
+
+.tuning-slider__value {
+  min-width: 2.5em;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.tuning-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* Calibration screen ------------------------------------------------------- */
+.calibration {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 32px 24px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.calibration .page__header {
+  width: 100%;
+}
+
+.calibration__intro,
+.calibration__result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+  max-width: 420px;
+}
+
+.calibration__steps {
+  text-align: left;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.calibration__current {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.calibration__countdown,
+.calibration__sampling {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.calibration__stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.calibration__count {
+  font-size: 120px;
+  line-height: 1;
+  font-weight: 600;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.calibration__hint {
+  font-size: 18px;
+  color: var(--text-h);
+}
+
+.calibration__bar {
+  width: min(420px, 100%);
+  height: 16px;
+  border-radius: 8px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.calibration__bar-fill {
+  height: 100%;
+  width: 0;
+  border-radius: 8px;
+  background: var(--border);
+  transition: width 0.1s linear;
+}
+
+.calibration__bar-fill--active {
+  background: #35c46a;
+}
+
+.accuracy-slider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.accuracy-slider__input {
+  width: 160px;
+}
+
+.accuracy-slider__value {
+  min-width: 3em;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.calibration__progress {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.calibration__target {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.calibration__target-name {
+  font-size: 72px;
+  line-height: 1;
+  font-weight: 600;
+  color: var(--text-h);
+  letter-spacing: -1px;
+}
+
+.pill-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font: inherit;
+  font-size: 14px;
+  padding: 6px 14px 6px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--code-bg);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.pill-toggle__knob {
+  width: 30px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--border);
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+}
+
+.pill-toggle__knob::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s ease;
+}
+
+.pill-toggle--on {
+  color: var(--text-h);
+  border-color: var(--accent-border);
+}
+
+.pill-toggle--on .pill-toggle__knob {
+  background: #35c46a;
+}
+
+.pill-toggle--on .pill-toggle__knob::after {
+  transform: translateX(12px);
+}
+
+.calibration__notes-list {
+  font-size: 15px;
+  color: var(--text-h);
+  font-variant-numeric: tabular-nums;
+}
+
+.calibration__samples {
+  font-size: 13px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.calibration__note {
+  color: var(--text);
+  font-size: 13px;
+}
+
+.calibration__actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Hold-progress indicator -------------------------------------------------- */
+.hold-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 240px;
+  margin: 6px auto 0;
+  opacity: 0.45;
+  transition: opacity 0.15s ease;
+}
+
+.hold-indicator--active {
+  opacity: 1;
+}
+
+.hold-indicator__track {
+  position: relative;
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.hold-indicator__fill {
+  height: 100%;
+  background: #35c46a;
+  border-radius: 4px;
+  transition: width 0.06s linear;
+}
+
+.hold-indicator__countdown {
+  min-width: 3em;
+  text-align: right;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.hold-indicator--active .hold-indicator__countdown {
+  color: #35c46a;
+  font-weight: 600;
+}
+
+/* Accuracy bar ------------------------------------------------------------- */
+.accuracy-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+.accuracy-bar__track {
+  position: relative;
+  height: 12px;
+  border-radius: 6px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.accuracy-bar__zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba(53, 196, 106, 0.22);
+}
+
+.accuracy-bar__center {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-1px);
+  background: var(--text-h);
+  opacity: 0.55;
+}
+
+.accuracy-bar__marker {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 4px;
+  border-radius: 2px;
+  transform: translateX(-2px);
+  background: var(--text-h);
+  transition: left 0.08s ease-out;
+}
+
+.accuracy-bar--in-tune .accuracy-bar__marker {
+  background: #35c46a;
+}
+.accuracy-bar--sharp .accuracy-bar__marker {
+  background: #e0a565;
+}
+.accuracy-bar--flat .accuracy-bar__marker {
+  background: #6592e0;
+}
+
+.accuracy-bar__scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.accuracy-bar__reading {
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.accuracy-bar--in-tune .accuracy-bar__reading {
+  color: #35c46a;
+}
+
+/* Generic sub-pages (Scales / All notes / Settings) ------------------------ */
+.page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 32px 24px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.page__header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.field select {
+  font: inherit;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+}
+
+.field__hint {
+  font-size: 12px;
+  color: var(--text);
+  opacity: 0.7;
+}
+
+.scales-controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.scales-controls__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 320px;
+}
+
+.scale-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.scale-preview__note {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.scale-preview__note-name {
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+/* Drill -------------------------------------------------------------------- */
+.drill {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 32px 24px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+}
+
+.drill__header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.drill__scale-label {
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.drill__progress {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.drill__complete {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
 }
 
 /* Footer / status ------------------------------------------------------- */

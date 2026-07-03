@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
+  A4_HZ,
+  calibratedA4Hz,
   hzToMidi,
   midiToHz,
   midiToNoteName,
@@ -63,5 +65,29 @@ describe('note number helpers', () => {
     expect(noteNameToMidi('A#3')).toBe(58)
     expect(noteNameToMidi('C4')).toBe(60)
     expect(noteNameToMidi('nonsense')).toBeNull()
+  })
+})
+
+describe('calibratedA4Hz', () => {
+  it('returns the standard reference for a zero offset', () => {
+    expect(calibratedA4Hz(0)).toBe(A4_HZ)
+  })
+
+  it('shifts a reading sharper for a positive offset', () => {
+    const note = toNote(440, 1, { a4Hz: calibratedA4Hz(10) })
+    expect(note!.noteName).toBe('A4')
+    expect(note!.cents).toBeGreaterThan(0)
+  })
+
+  it('shifts a reading flatter for a negative offset', () => {
+    const note = toNote(440, 1, { a4Hz: calibratedA4Hz(-10) })
+    expect(note!.noteName).toBe('A4')
+    expect(note!.cents).toBeLessThan(0)
+  })
+
+  it('round-trips back to 0 cents when fed its own calibrated reference', () => {
+    const a4Hz = calibratedA4Hz(7)
+    const note = toNote(a4Hz, 1, { a4Hz })
+    expect(note!.cents).toBe(0)
   })
 })
