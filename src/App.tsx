@@ -118,6 +118,7 @@ function App() {
           rangeLow={drillScale.rangeLow}
           rangeHigh={drillScale.rangeHigh}
           randomOrder={drillScale.randomOrder}
+          adaptiveWeight={settings.adaptiveWeight}
           holdMs={settings.holdMs}
           acceptanceThresholdCents={settings.acceptanceThresholdCents}
           fingeringReveal={settings.fingeringReveal}

@@ -4,7 +4,9 @@ import { SCALES } from './scales'
 import {
   DEFAULT_SETTINGS,
   MAX_ACCEPTANCE_CENTS,
+  MAX_ADAPTIVE_WEIGHT,
   MIN_ACCEPTANCE_CENTS,
+  MIN_ADAPTIVE_WEIGHT,
   type FingeringReveal,
   type KeyMode,
   type SessionSettings,
@@ -98,5 +100,9 @@ export function sanitizeSettings(parsed: unknown): SessionSettings {
       typeof p.lastScaleRangeHigh === 'string'
         ? p.lastScaleRangeHigh
         : DEFAULT_SETTINGS.lastScaleRangeHigh,
+    adaptiveWeight:
+      typeof p.adaptiveWeight === 'number' && Number.isFinite(p.adaptiveWeight)
+        ? Math.max(MIN_ADAPTIVE_WEIGHT, Math.min(MAX_ADAPTIVE_WEIGHT, Math.round(p.adaptiveWeight)))
+        : DEFAULT_SETTINGS.adaptiveWeight,
   }
 }

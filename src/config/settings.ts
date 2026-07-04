@@ -31,6 +31,8 @@ export interface SessionSettings {
   lastScaleKeyMode: KeyMode
   lastScaleRangeLow: string
   lastScaleRangeHigh: string
+  /** 0 = deterministic sequential drill; 1-5 = increasing bias toward slow-scoring notes. */
+  adaptiveWeight: number
 }
 
 export const DEFAULT_SETTINGS: SessionSettings = {
@@ -46,11 +48,16 @@ export const DEFAULT_SETTINGS: SessionSettings = {
   lastScaleKeyMode: 'concert',
   lastScaleRangeLow: 'Bb3',
   lastScaleRangeHigh: 'F6',
+  adaptiveWeight: 0,
 }
 
 /** Inclusive bounds for {@link SessionSettings.acceptanceThresholdCents} (a looser or stricter "in tune" window). */
 export const MIN_ACCEPTANCE_CENTS = 5
 export const MAX_ACCEPTANCE_CENTS = 50
+
+/** Inclusive bounds for {@link SessionSettings.adaptiveWeight}. */
+export const MIN_ADAPTIVE_WEIGHT = 0
+export const MAX_ADAPTIVE_WEIGHT = 5
 
 /** Convert a {@link FingeringReveal} setting to the milliseconds the drill's confirm→reveal delay should use. */
 export function fingeringRevealToMs(reveal: FingeringReveal): number {

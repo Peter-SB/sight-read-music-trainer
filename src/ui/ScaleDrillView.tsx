@@ -5,6 +5,7 @@ import type { InstrumentId } from '../config/instruments'
 import { SCALES, type ScaleId } from '../config/scales'
 import { fingeringRevealToMs, type FingeringReveal } from '../config/settings'
 import { generateScale, shuffleSequence } from '../drill/scaleGenerator'
+import { createAdaptiveNoteSource, createSequentialNoteSource } from '../drill/adaptiveNoteSource'
 import { DEFAULT_DRILL_CONFIG, type DrillConfig } from '../drill/drillStateMachine'
 import { AccuracyBar } from './AccuracyBar'
 import { FingeringDiagram } from './FingeringDiagram'
@@ -22,6 +23,8 @@ interface ScaleDrillViewProps {
   rangeHigh: string
   /** Walk the scale in random order instead of ascending. */
   randomOrder: boolean
+  /** 0 = deterministic sequential drill; 1-5 = increasing bias toward slow-scoring notes. */
+  adaptiveWeight: number
   holdMs: number
   /** Max absolute cents deviation still accepted as the target note. */
   acceptanceThresholdCents: number
@@ -38,6 +41,7 @@ export function ScaleDrillView({
   rangeLow,
   rangeHigh,
   randomOrder,
+  adaptiveWeight,
   holdMs,
   acceptanceThresholdCents,
   fingeringReveal,
@@ -45,17 +49,20 @@ export function ScaleDrillView({
   onTuningOffsetChange,
   onExit,
 }: ScaleDrillViewProps) {
-  const sequence = useMemo(() => {
+  const pool = useMemo(() => {
     const low = toConcertNoteName(rangeLow, instrument)
     const high = toConcertNoteName(rangeHigh, instrument)
     if (!low || !high) return []
-    const ascending = generateScale(rootPitchClass, scaleId, { low, high })
-    const up = randomOrder ? shuffleSequence(ascending) : ascending
-    // Walk up then back down (excluding the top note, which already played once) so the
-    // drill forms a single up-down pass instead of stopping at the top.
-    const down = up.slice(0, -1).reverse()
-    return [...up, ...down]
-  }, [instrument, rootPitchClass, scaleId, rangeLow, rangeHigh, randomOrder])
+    return generateScale(rootPitchClass, scaleId, { low, high })
+  }, [instrument, rootPitchClass, scaleId, rangeLow, rangeHigh])
+
+  // Endless note source: sequential up-down walk when adaptive weighting is off,
+  // otherwise a live-reweighted random draw biased toward slow-scoring notes.
+  const noteSource = useMemo(() => {
+    if (adaptiveWeight > 0) return createAdaptiveNoteSource(pool, adaptiveWeight)
+    const orderedPool = randomOrder ? shuffleSequence(pool) : pool
+    return createSequentialNoteSource(orderedPool)
+  }, [pool, adaptiveWeight, randomOrder])
 
   const config: DrillConfig = useMemo(
     () => ({
@@ -67,8 +74,8 @@ export function ScaleDrillView({
     [holdMs, acceptanceThresholdCents, fingeringReveal],
   )
 
-  const { status, error, reading, drillState, start, stop, restart, skip } = useDrillEngine(
-    sequence,
+  const { status, error, reading, drillState, start, stop, skip } = useDrillEngine(
+    noteSource,
     config,
     calibratedA4Hz(tuningOffsetCents),
   )
@@ -78,12 +85,6 @@ export function ScaleDrillView({
     return () => stop()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  // The drill walks up then down through the scale on repeat until the player exits,
-  // rather than stopping at a "complete" screen.
-  useEffect(() => {
-    if (drillState.phase === 'complete') restart()
-  }, [drillState.phase, restart])
 
   const running = status === 'running'
   // fingeringReveal === 0 ("always on") shows the chart the instant the target note appears,
@@ -98,7 +99,7 @@ export function ScaleDrillView({
 
   const readingWritten = reading ? concertToWrittenNoteName(reading.noteName, instrument) : null
 
-  if (sequence.length === 0) {
+  if (pool.length === 0) {
     return (
       <div className="drill">
         <p>Couldn't build a note sequence for this scale/range combination.</p>
@@ -117,7 +118,7 @@ export function ScaleDrillView({
         </button>
         <span className="drill__scale-label">
           {rootPitchClass} {SCALES[scaleId].label}
-          {randomOrder ? ' · Random order' : ''}
+          {adaptiveWeight === 0 && randomOrder ? ' · Random order' : ''}
         </span>
       </header>
 
@@ -128,7 +129,7 @@ export function ScaleDrillView({
       )}
 
       <div className="drill__progress">
-        Note {(drillState.index % sequence.length) + 1} of {sequence.length}
+        Note {drillState.notesPlayed + 1}
       </div>
 
       <div className="stage">

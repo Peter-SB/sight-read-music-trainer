@@ -2,12 +2,14 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { AudioCapture, type CaptureStatus } from '../audio/audioCapture'
 import { A4_HZ, toNote } from '../audio/noteMapper'
 import type { NoteReading } from '../audio/types'
+import { recordNoteDelay } from '../drill/noteScores'
 import {
   createDrillState,
   skipCurrentNote,
   updateDrill,
   type DrillConfig,
   type DrillState,
+  type NoteSource,
 } from '../drill/drillStateMachine'
 
 /**
@@ -32,7 +34,7 @@ export interface UseDrillEngine {
 
 /** @param a4Hz Calibration reference pitch — see {@link calibratedA4Hz}. Defaults to standard 440. */
 export function useDrillEngine(
-  sequence: string[],
+  noteSource: NoteSource,
   config: DrillConfig,
   a4Hz: number = A4_HZ,
 ): UseDrillEngine {
@@ -40,11 +42,12 @@ export function useDrillEngine(
   const [error, setError] = useState<Error | null>(null)
   const [reading, setReading] = useState<NoteReading | null>(null)
   const [drillState, setDrillState] = useState<DrillState>(() =>
-    createDrillState(sequence),
+    createDrillState(noteSource),
   )
 
   const drillStateRef = useRef(drillState)
   const configRef = useRef(config)
+  const noteSourceRef = useRef(noteSource)
   const captureRef = useRef<AudioCapture | null>(null)
   // Read fresh each frame without recreating AudioCapture (and dropping the mic) on every slider tick.
   const a4HzRef = useRef(a4Hz)
@@ -55,10 +58,14 @@ export function useDrillEngine(
   }, [config])
 
   useEffect(() => {
-    const fresh = createDrillState(sequence)
+    noteSourceRef.current = noteSource
+  }, [noteSource])
+
+  useEffect(() => {
+    const fresh = createDrillState(noteSource)
     drillStateRef.current = fresh
     setDrillState(fresh)
-  }, [sequence])
+  }, [noteSource])
 
   const getCapture = useCallback((): AudioCapture => {
     if (!captureRef.current) {
@@ -70,8 +77,15 @@ export function useDrillEngine(
             drillStateRef.current,
             noteReading,
             timestamp,
+            noteSourceRef.current,
             configRef.current,
           )
+          if (
+            next.lastNoteResult !== null &&
+            next.lastNoteResult !== drillStateRef.current.lastNoteResult
+          ) {
+            recordNoteDelay(next.lastNoteResult.note, next.lastNoteResult.delayMs)
+          }
           drillStateRef.current = next
           setDrillState(next)
         },
@@ -94,13 +108,13 @@ export function useDrillEngine(
   }, [])
 
   const restart = useCallback(() => {
-    const fresh = createDrillState(sequence)
+    const fresh = createDrillState(noteSource)
     drillStateRef.current = fresh
     setDrillState(fresh)
-  }, [sequence])
+  }, [noteSource])
 
   const skip = useCallback(() => {
-    const next = skipCurrentNote(drillStateRef.current)
+    const next = skipCurrentNote(drillStateRef.current, noteSourceRef.current, performance.now())
     drillStateRef.current = next
     setDrillState(next)
   }, [])

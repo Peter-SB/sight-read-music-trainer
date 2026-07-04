@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { INSTRUMENTS } from '../config/instruments'
 import type { FingeringReveal, SessionSettings } from '../config/settings'
 import { allNotesInRange } from '../drill/scaleGenerator'
+import { AdaptiveWeightSlider } from './AdaptiveWeightSlider'
 import { InstrumentSelector } from './InstrumentSelector'
 
 interface SettingsPanelProps {
@@ -136,6 +137,11 @@ export function SettingsPanel({ settings, onChange, onBack }: SettingsPanelProps
             ))}
           </select>
         </label>
+
+        <AdaptiveWeightSlider
+          value={settings.adaptiveWeight}
+          onChange={(adaptiveWeight) => onChange({ ...settings, adaptiveWeight })}
+        />
       </div>
     </div>
   )

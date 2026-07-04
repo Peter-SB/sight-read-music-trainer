@@ -13,9 +13,20 @@ import type { NoteReading } from '../audio/types'
 
 export type DrillPhase = 'awaiting' | 'confirmed' | 'revealed' | 'hint' | 'complete'
 
+/**
+ * Pulls the next target note given the previous one (or `null` for the very
+ * first note), or `null` if there's no note to give (empty pool). Called
+ * synchronously; implementations own their own cycling/RNG state internally.
+ */
+export type NoteSource = (previousNote: string | null) => string | null
+
+/** A completed note's reaction time, surfaced once at the hold-threshold transition. */
+export interface NoteResult {
+  note: string
+  delayMs: number
+}
+
 export interface DrillState {
-  sequence: string[]
-  index: number
   phase: DrillPhase
   /** Concert-pitch note name currently being asked for, or null once complete. */
   targetNote: string | null
@@ -23,6 +34,12 @@ export interface DrillState {
   wrongSinceMs: number | null
   /** Timestamp the current phase was entered, used for delay/pause timers. */
   phaseEnteredAt: number | null
+  /** Timestamp the current target note was first presented (first frame processed for it). */
+  noteStartedAt: number | null
+  /** Count of notes completed so far, for progress display. */
+  notesPlayed: number
+  /** Set once, at the moment the current/just-finished note first met the hold threshold; cleared on advance. */
+  lastNoteResult: NoteResult | null
 }
 
 export interface DrillConfig {
@@ -46,15 +63,17 @@ export const DEFAULT_DRILL_CONFIG: DrillConfig = {
   advancePauseMs: 600,
 }
 
-export function createDrillState(sequence: string[]): DrillState {
+export function createDrillState(getNextNote: NoteSource): DrillState {
+  const first = getNextNote(null)
   return {
-    sequence,
-    index: 0,
-    phase: sequence.length > 0 ? 'awaiting' : 'complete',
-    targetNote: sequence[0] ?? null,
+    phase: first !== null ? 'awaiting' : 'complete',
+    targetNote: first,
     holdStartedAt: null,
     wrongSinceMs: null,
     phaseEnteredAt: null,
+    noteStartedAt: null,
+    notesPlayed: 0,
+    lastNoteResult: null,
   }
 }
 
@@ -70,34 +89,37 @@ function isCorrect(
   )
 }
 
-function advance(state: DrillState): DrillState {
-  const nextIndex = state.index + 1
-  if (nextIndex >= state.sequence.length) {
+function advance(state: DrillState, getNextNote: NoteSource, now: number): DrillState {
+  const next = getNextNote(state.targetNote)
+  if (next === null) {
     return {
       ...state,
-      index: nextIndex,
       phase: 'complete',
       targetNote: null,
       holdStartedAt: null,
       wrongSinceMs: null,
       phaseEnteredAt: null,
+      noteStartedAt: null,
+      lastNoteResult: null,
     }
   }
   return {
     ...state,
-    index: nextIndex,
     phase: 'awaiting',
-    targetNote: state.sequence[nextIndex],
+    targetNote: next,
     holdStartedAt: null,
     wrongSinceMs: null,
     phaseEnteredAt: null,
+    noteStartedAt: null,
+    notesPlayed: state.notesPlayed + 1,
+    lastNoteResult: null,
   }
 }
 
 /** Force-advance past the current note, e.g. when the player can't produce it or the mic won't register it. */
-export function skipCurrentNote(state: DrillState): DrillState {
+export function skipCurrentNote(state: DrillState, getNextNote: NoteSource, now: number): DrillState {
   if (state.phase === 'complete') return state
-  return advance(state)
+  return advance(state, getNextNote, now)
 }
 
 /**
@@ -109,6 +131,7 @@ export function updateDrill(
   state: DrillState,
   reading: NoteReading | null,
   now: number,
+  getNextNote: NoteSource,
   config: DrillConfig = DEFAULT_DRILL_CONFIG,
 ): DrillState {
   switch (state.phase) {
@@ -117,28 +140,46 @@ export function updateDrill(
 
     case 'awaiting':
     case 'hint': {
+      const noteStartedAt = state.noteStartedAt ?? now
       const correct = isCorrect(reading, state.targetNote!, config.toleranceCents)
 
       if (correct) {
         const holdStartedAt = state.holdStartedAt ?? now
         if (now - holdStartedAt >= config.holdMs) {
+          const lastNoteResult: NoteResult = { note: state.targetNote!, delayMs: now - noteStartedAt }
           return config.revealDelayMs <= 0
-            ? { ...state, phase: 'revealed', holdStartedAt, wrongSinceMs: null, phaseEnteredAt: now }
-            : { ...state, phase: 'confirmed', holdStartedAt, wrongSinceMs: null, phaseEnteredAt: now }
+            ? {
+                ...state,
+                phase: 'revealed',
+                holdStartedAt,
+                wrongSinceMs: null,
+                phaseEnteredAt: now,
+                noteStartedAt,
+                lastNoteResult,
+              }
+            : {
+                ...state,
+                phase: 'confirmed',
+                holdStartedAt,
+                wrongSinceMs: null,
+                phaseEnteredAt: now,
+                noteStartedAt,
+                lastNoteResult,
+              }
         }
-        return { ...state, holdStartedAt, wrongSinceMs: null }
+        return { ...state, holdStartedAt, wrongSinceMs: null, noteStartedAt }
       }
 
       if (reading === null) {
         // Silence: don't punish, but don't let a stray hold carry over either.
-        return { ...state, holdStartedAt: null }
+        return { ...state, holdStartedAt: null, noteStartedAt }
       }
 
       const wrongSinceMs = state.wrongSinceMs ?? now
       if (state.phase === 'awaiting' && now - wrongSinceMs >= config.hintTimeoutMs) {
-        return { ...state, phase: 'hint', holdStartedAt: null, wrongSinceMs, phaseEnteredAt: now }
+        return { ...state, phase: 'hint', holdStartedAt: null, wrongSinceMs, phaseEnteredAt: now, noteStartedAt }
       }
-      return { ...state, holdStartedAt: null, wrongSinceMs }
+      return { ...state, holdStartedAt: null, wrongSinceMs, noteStartedAt }
     }
 
     case 'confirmed': {
@@ -150,7 +191,7 @@ export function updateDrill(
 
     case 'revealed': {
       if (now - (state.phaseEnteredAt ?? now) >= config.advancePauseMs) {
-        return advance(state)
+        return advance(state, getNextNote, now)
       }
       return state
     }

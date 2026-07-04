@@ -672,6 +672,10 @@
   gap: 16px;
 }
 
+.page__header-toggle {
+  margin-left: auto;
+}
+
 .field {
   display: flex;
   flex-direction: column;
@@ -732,6 +736,12 @@
 .scale-preview__note-name {
   font-weight: 600;
   color: var(--text-h);
+}
+
+.scale-preview__score {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
 }
 
 /* Drill -------------------------------------------------------------------- */
