@@ -94,6 +94,12 @@ function advance(state: DrillState): DrillState {
   }
 }
 
+/** Force-advance past the current note, e.g. when the player can't produce it or the mic won't register it. */
+export function skipCurrentNote(state: DrillState): DrillState {
+  if (state.phase === 'complete') return state
+  return advance(state)
+}
+
 /**
  * Advance the drill by one reading. Pass `reading: null` for silence/no
  * confident pitch — treated as neutral (resets hold progress, but doesn't

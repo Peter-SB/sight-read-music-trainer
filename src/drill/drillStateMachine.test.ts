@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   createDrillState,
+  skipCurrentNote,
   updateDrill,
   type DrillConfig,
 } from './drillStateMachine'
@@ -103,5 +104,26 @@ describe('drillStateMachine', () => {
     s = updateDrill(s, reading('C4'), 300, zeroDelay)
     expect(s.phase).toBe('complete')
     expect(s.targetNote).toBeNull()
+  })
+
+  it('skipCurrentNote force-advances past a note the player can\'t produce', () => {
+    const s0 = createDrillState(['C4', 'D4'])
+    const s1 = skipCurrentNote(s0)
+    expect(s1.phase).toBe('awaiting')
+    expect(s1.targetNote).toBe('D4')
+  })
+
+  it('skipCurrentNote on the last note completes the drill', () => {
+    const s0 = createDrillState(['C4'])
+    const s1 = skipCurrentNote(s0)
+    expect(s1.phase).toBe('complete')
+    expect(s1.targetNote).toBeNull()
+  })
+
+  it('skipCurrentNote is a no-op once already complete', () => {
+    const s0 = createDrillState(['C4'])
+    const s1 = skipCurrentNote(s0)
+    const s2 = skipCurrentNote(s1)
+    expect(s2).toBe(s1)
   })
 })

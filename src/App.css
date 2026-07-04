@@ -1,5 +1,6 @@
 .app {
-  max-width: 640px;
+  max-width: 70vw;
+  width: 100%;
   margin: 0 auto;
   padding: 32px 24px 48px;
   display: flex;
@@ -488,7 +489,7 @@
 }
 
 .pill-toggle__knob::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 2px;
   left: 2px;
@@ -656,7 +657,8 @@
 
 /* Generic sub-pages (Scales / All notes / Settings) ------------------------ */
 .page {
-  max-width: 640px;
+  max-width: 70vw;
+  width: 100%;
   margin: 0 auto;
   padding: 32px 24px 48px;
   display: flex;
@@ -724,6 +726,7 @@
   flex-direction: column;
   align-items: center;
   gap: 8px;
+  padding: 20px 2px;
 }
 
 .scale-preview__note-name {
@@ -759,12 +762,8 @@
   font-size: 14px;
 }
 
-.drill__complete {
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
+.drill__skip {
+  align-self: center;
 }
 
 /* Footer / status ------------------------------------------------------- */
@@ -791,4 +790,53 @@
 }
 .status-dot--error {
   background: #e06565;
+}
+
+/* Sheet music ----------------------------------------------------------- */
+.sheet-music {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+/* Staff under the big note name in the drill. */
+.note-display__staff {
+  width: 200px;
+}
+
+/* Staff under each fingering on the All-notes and Scales previews. */
+.scale-preview__staff {
+  width: 130px;
+}
+
+.sheet-music__staff-line,
+.sheet-music__ledger {
+  stroke: var(--text-h);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.sheet-music__note {
+  /* The semibreve artwork is solid black; flip it to stay visible in dark mode. */
+  color: var(--text-h);
+}
+
+.sheet-music__accidental {
+  fill: var(--text-h);
+  font-size: 18px;
+  font-weight: 700;
+  font-family: var(--sans);
+}
+
+.sheet-music__unknown {
+  fill: var(--text);
+  font-size: 18px;
+  text-anchor: middle;
+}
+
+@media (prefers-color-scheme: dark) {
+  .sheet-music__note {
+    filter: invert(1) brightness(1.6);
+  }
 }

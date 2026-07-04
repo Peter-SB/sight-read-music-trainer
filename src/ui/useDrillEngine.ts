@@ -4,6 +4,7 @@ import { A4_HZ, toNote } from '../audio/noteMapper'
 import type { NoteReading } from '../audio/types'
 import {
   createDrillState,
+  skipCurrentNote,
   updateDrill,
   type DrillConfig,
   type DrillState,
@@ -25,6 +26,8 @@ export interface UseDrillEngine {
   start: () => Promise<void>
   stop: () => void
   restart: () => void
+  /** Force-advance past the current note when the player can't produce it or the mic won't register it. */
+  skip: () => void
 }
 
 /** @param a4Hz Calibration reference pitch — see {@link calibratedA4Hz}. Defaults to standard 440. */
@@ -96,11 +99,17 @@ export function useDrillEngine(
     setDrillState(fresh)
   }, [sequence])
 
+  const skip = useCallback(() => {
+    const next = skipCurrentNote(drillStateRef.current)
+    drillStateRef.current = next
+    setDrillState(next)
+  }, [])
+
   useEffect(() => {
     return () => {
       captureRef.current?.stop()
     }
   }, [])
 
-  return { status, error, reading, drillState, start, stop, restart }
+  return { status, error, reading, drillState, start, stop, restart, skip }
 }

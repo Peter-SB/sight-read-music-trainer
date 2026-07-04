@@ -10,6 +10,7 @@ import { AccuracyBar } from './AccuracyBar'
 import { FingeringDiagram } from './FingeringDiagram'
 import { HoldIndicator } from './HoldIndicator'
 import { NeedleMeter } from './NeedleMeter'
+import { SheetMusic } from './SheetMusic'
 import { TuningSlider } from './TuningSlider'
 import { useDrillEngine } from './useDrillEngine'
 
@@ -49,7 +50,11 @@ export function ScaleDrillView({
     const high = toConcertNoteName(rangeHigh, instrument)
     if (!low || !high) return []
     const ascending = generateScale(rootPitchClass, scaleId, { low, high })
-    return randomOrder ? shuffleSequence(ascending) : ascending
+    const up = randomOrder ? shuffleSequence(ascending) : ascending
+    // Walk up then back down (excluding the top note, which already played once) so the
+    // drill forms a single up-down pass instead of stopping at the top.
+    const down = up.slice(0, -1).reverse()
+    return [...up, ...down]
   }, [instrument, rootPitchClass, scaleId, rangeLow, rangeHigh, randomOrder])
 
   const config: DrillConfig = useMemo(
@@ -62,7 +67,7 @@ export function ScaleDrillView({
     [holdMs, acceptanceThresholdCents, fingeringReveal],
   )
 
-  const { status, error, reading, drillState, start, stop, restart } = useDrillEngine(
+  const { status, error, reading, drillState, start, stop, restart, skip } = useDrillEngine(
     sequence,
     config,
     calibratedA4Hz(tuningOffsetCents),
@@ -73,6 +78,12 @@ export function ScaleDrillView({
     return () => stop()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // The drill walks up then down through the scale on repeat until the player exits,
+  // rather than stopping at a "complete" screen.
+  useEffect(() => {
+    if (drillState.phase === 'complete') restart()
+  }, [drillState.phase, restart])
 
   const running = status === 'running'
   // fingeringReveal === 0 ("always on") shows the chart the instant the target note appears,
@@ -116,45 +127,46 @@ export function ScaleDrillView({
         </div>
       )}
 
-      {drillState.phase === 'complete' ? (
-        <div className="drill__complete">
-          <h2>Drill complete 🎷</h2>
-          <p>
-            {sequence.length} note{sequence.length === 1 ? '' : 's'} practiced.
-          </p>
-          <button type="button" className="mic-button" onClick={restart}>
-            Restart
-          </button>
-        </div>
-      ) : (
-        <>
-          <div className="drill__progress">
-            Note {drillState.index + 1} of {sequence.length}
-          </div>
+      <div className="drill__progress">
+        Note {(drillState.index % sequence.length) + 1} of {sequence.length}
+      </div>
 
-          <div className="stage">
-            <div className="note-display">
-              <span className="note-name">
-                {targetWritten ? formatNoteNameForDisplay(targetWritten) : '—'}
-              </span>
-              <span className="note-detail">{phaseLabel(drillState.phase)}</span>
-              <HoldIndicator holdStartedAt={drillState.holdStartedAt} holdMs={config.holdMs} />
-            </div>
-            <FingeringDiagram
-              concertNoteName={showFingering ? drillState.targetNote : null}
-              instrument={instrument}
+      <div className="stage">
+        <div className="note-display">
+          <span className="note-name">
+            {targetWritten ? formatNoteNameForDisplay(targetWritten) : '—'}
+          </span>
+          {targetWritten && (
+            <SheetMusic
+              notes={[formatNoteNameForDisplay(targetWritten)]}
+              className="note-display__staff"
             />
-          </div>
+          )}
+          <span className="note-detail">{phaseLabel(drillState.phase)}</span>
+          <HoldIndicator holdStartedAt={drillState.holdStartedAt} holdMs={config.holdMs} />
+        </div>
+        <FingeringDiagram
+          concertNoteName={showFingering ? drillState.targetNote : null}
+          instrument={instrument}
+        />
+      </div>
 
-          <NeedleMeter
-            cents={reading?.cents ?? null}
-            noteName={readingWritten ? formatNoteNameForDisplay(readingWritten) : null}
-            toleranceCents={config.toleranceCents}
-          />
-          <AccuracyBar cents={reading?.cents ?? null} toleranceCents={config.toleranceCents} />
-          <TuningSlider valueCents={tuningOffsetCents} onChange={onTuningOffsetChange} />
-        </>
-      )}
+      <button
+        type="button"
+        className="mic-button drill__skip"
+        disabled={drillState.phase === 'complete'}
+        onClick={skip}
+      >
+        Skip note
+      </button>
+
+      <NeedleMeter
+        cents={reading?.cents ?? null}
+        noteName={readingWritten ? formatNoteNameForDisplay(readingWritten) : null}
+        toleranceCents={config.toleranceCents}
+      />
+      <AccuracyBar cents={reading?.cents ?? null} toleranceCents={config.toleranceCents} />
+      <TuningSlider valueCents={tuningOffsetCents} onChange={onTuningOffsetChange} />
 
       <footer className="app__footer">
         <span className={`status-dot status-dot--${status}`} aria-hidden="true" />
