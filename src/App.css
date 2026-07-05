@@ -33,6 +33,7 @@
   flex-direction: column;
   gap: 6px;
   text-align: left;
+  margin-right: 12px;
 }
 
 .instrument-selector__label {
