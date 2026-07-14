@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { INSTRUMENTS } from '../config/instruments'
 import type { FingeringReveal, SessionSettings } from '../config/settings'
 import { allNotesInRange } from '../drill/scaleGenerator'
@@ -29,6 +30,7 @@ const FINGERING_REVEAL_OPTIONS: { value: FingeringReveal; label: string }[] = [
 ]
 
 export function SettingsPanel({ settings, onChange, onBack }: SettingsPanelProps) {
+  const navigate = useNavigate()
   const { writtenRange } = INSTRUMENTS[settings.instrument]
 
   const rangeOptions = useMemo(
@@ -142,6 +144,14 @@ export function SettingsPanel({ settings, onChange, onBack }: SettingsPanelProps
           value={settings.adaptiveWeight}
           onChange={(adaptiveWeight) => onChange({ ...settings, adaptiveWeight })}
         />
+
+        <button
+          type="button"
+          className="mic-button"
+          onClick={() => navigate('/calibrate')}
+        >
+          Calibrate mic
+        </button>
       </div>
     </div>
   )

@@ -1,4 +1,12 @@
 import { useEffect, useRef, useState } from "react";
+import {
+  BrowserRouter,
+  Navigate,
+  Outlet,
+  Route,
+  Routes,
+  useNavigate,
+} from "react-router-dom";
 import { useAudioPitch } from "./ui/useAudioPitch";
 import { calibratedA4Hz, formatNoteNameForDisplay } from "./audio/noteMapper";
 import { forDisplay } from "./audio/transposition";
@@ -14,35 +22,30 @@ import { checkBackendHealth } from "./api/omrClient";
 import { SettingsPanel } from "./ui/SettingsPanel";
 import { ScaleDrillView } from "./ui/ScaleDrillView";
 import { CalibrationView } from "./ui/CalibrationView";
+import { Sidebar } from "./ui/Sidebar";
 import { INSTRUMENTS } from "./config/instruments";
-import { DEFAULT_SETTINGS, fingeringRevealToMs } from "./config/settings";
+import { fingeringRevealToMs } from "./config/settings";
+import type { SessionSettings } from "./config/settings";
 import { loadSettings, saveSettings } from "./config/settingsStorage";
 import type { ScaleId } from "./config/scales";
 import "./App.css";
 
-type Screen =
-  | "home"
-  | "scales"
-  | "allNotes"
-  | "learnSheetMusic"
-  | "settings"
-  | "drill"
-  | "calibrate";
+interface DrillScaleState {
+  scaleId: ScaleId;
+  root: string;
+  rangeLow: string;
+  rangeHigh: string;
+  randomOrder: boolean;
+}
 
 function App() {
-  const [screen, setScreen] = useState<Screen>("home");
   const [settings, setSettings] = useState(loadSettings);
 
   useEffect(() => {
     saveSettings(settings);
   }, [settings]);
-  const [drillScale, setDrillScale] = useState<{
-    scaleId: ScaleId;
-    root: string;
-    rangeLow: string;
-    rangeHigh: string;
-    randomOrder: boolean;
-  }>({
+
+  const [drillScale, setDrillScale] = useState<DrillScaleState>({
     scaleId: settings.lastScaleId,
     root: settings.lastScaleRoot,
     rangeLow: settings.lastScaleRangeLow,
@@ -50,118 +53,213 @@ function App() {
     randomOrder: false,
   });
 
-  if (screen === "scales") {
-    return (
-      <main className="app">
-        <ScalesPage
-          instrument={settings.instrument}
-          scaleId={settings.lastScaleId}
-          root={settings.lastScaleRoot}
-          keyMode={settings.lastScaleKeyMode}
-          rangeLow={settings.lastScaleRangeLow}
-          rangeHigh={settings.lastScaleRangeHigh}
-          onScaleIdChange={(lastScaleId) =>
-            setSettings({ ...settings, lastScaleId })
-          }
-          onRootChange={(lastScaleRoot) =>
-            setSettings({ ...settings, lastScaleRoot })
-          }
-          onKeyModeChange={(lastScaleKeyMode) =>
-            setSettings({ ...settings, lastScaleKeyMode })
-          }
-          onRangeLowChange={(lastScaleRangeLow) =>
-            setSettings({ ...settings, lastScaleRangeLow })
-          }
-          onRangeHighChange={(lastScaleRangeHigh) =>
-            setSettings({ ...settings, lastScaleRangeHigh })
-          }
-          onBack={() => setScreen("home")}
-          onStartDrill={(scaleId, root, rangeLow, rangeHigh, randomOrder) => {
-            setDrillScale({ scaleId, root, rangeLow, rangeHigh, randomOrder });
-            setScreen("drill");
-          }}
-        />
-      </main>
-    );
-  }
-
-  if (screen === "allNotes") {
-    return (
-      <main className="app">
-        <AllNotesPage
-          instrument={settings.instrument}
-          rangeLow={settings.rangeLow}
-          rangeHigh={settings.rangeHigh}
-          onBack={() => setScreen("home")}
-        />
-      </main>
-    );
-  }
-
-  if (screen === "learnSheetMusic") {
-    return (
-      <main className="app">
-        <LearnSheetMusicPage onBack={() => setScreen("home")} />
-      </main>
-    );
-  }
-
-  if (screen === "settings") {
-    return (
-      <main className="app">
-        <SettingsPanel
-          settings={settings}
-          onChange={setSettings}
-          onBack={() => setScreen("home")}
-        />
-      </main>
-    );
-  }
-
-  if (screen === "calibrate") {
-    return (
-      <main className="app">
-        <CalibrationView
-          instrument={settings.instrument}
-          currentOffsetCents={settings.tuningOffsetCents}
-          onApply={(tuningOffsetCents) =>
-            setSettings({ ...settings, tuningOffsetCents })
-          }
-          onBack={() => setScreen("home")}
-        />
-      </main>
-    );
-  }
-
-  if (screen === "drill") {
-    return (
-      <main className="app">
-        <ScaleDrillView
-          instrument={settings.instrument}
-          scaleId={drillScale.scaleId}
-          rootPitchClass={drillScale.root}
-          rangeLow={drillScale.rangeLow}
-          rangeHigh={drillScale.rangeHigh}
-          randomOrder={drillScale.randomOrder}
-          adaptiveWeight={settings.adaptiveWeight}
-          holdMs={settings.holdMs}
-          acceptanceThresholdCents={settings.acceptanceThresholdCents}
-          fingeringReveal={settings.fingeringReveal}
-          tuningOffsetCents={settings.tuningOffsetCents}
-          onTuningOffsetChange={(tuningOffsetCents) =>
-            setSettings({ ...settings, tuningOffsetCents })
-          }
-          onExit={() => setScreen("home")}
-        />
-      </main>
-    );
-  }
-
   return (
-    <HomeScreen
+    <BrowserRouter>
+      <Routes>
+        <Route
+          element={
+            <Layout settings={settings} onSettingsChange={setSettings} />
+          }
+        >
+          <Route
+            index
+            element={
+              <HomeScreen settings={settings} onSettingsChange={setSettings} />
+            }
+          />
+          <Route
+            path="scales"
+            element={
+              <ScalesRoute
+                settings={settings}
+                onSettingsChange={setSettings}
+                onStartDrill={setDrillScale}
+              />
+            }
+          />
+          <Route
+            path="all-notes"
+            element={<AllNotesRoute settings={settings} />}
+          />
+          <Route
+            path="learn-sheet-music"
+            element={<LearnSheetMusicRoute />}
+          />
+          <Route
+            path="settings"
+            element={
+              <SettingsRoute
+                settings={settings}
+                onSettingsChange={setSettings}
+              />
+            }
+          />
+          <Route
+            path="calibrate"
+            element={
+              <CalibrateRoute
+                settings={settings}
+                onSettingsChange={setSettings}
+              />
+            }
+          />
+          <Route
+            path="drill"
+            element={
+              <DrillRoute
+                settings={settings}
+                onSettingsChange={setSettings}
+                drillScale={drillScale}
+              />
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+function Layout({
+  settings,
+  onSettingsChange,
+}: {
+  settings: SessionSettings;
+  onSettingsChange: (next: SessionSettings) => void;
+}) {
+  return (
+    <div className="app-shell">
+      <Sidebar settings={settings} onSettingsChange={onSettingsChange} />
+      <div className="app-content">
+        <Outlet />
+      </div>
+    </div>
+  );
+}
+
+function ScalesRoute({
+  settings,
+  onSettingsChange,
+  onStartDrill,
+}: {
+  settings: SessionSettings;
+  onSettingsChange: (next: SessionSettings) => void;
+  onStartDrill: (next: DrillScaleState) => void;
+}) {
+  const navigate = useNavigate();
+  return (
+    <ScalesPage
+      instrument={settings.instrument}
+      scaleId={settings.lastScaleId}
+      root={settings.lastScaleRoot}
+      keyMode={settings.lastScaleKeyMode}
+      rangeLow={settings.lastScaleRangeLow}
+      rangeHigh={settings.lastScaleRangeHigh}
+      onScaleIdChange={(lastScaleId) =>
+        onSettingsChange({ ...settings, lastScaleId })
+      }
+      onRootChange={(lastScaleRoot) =>
+        onSettingsChange({ ...settings, lastScaleRoot })
+      }
+      onKeyModeChange={(lastScaleKeyMode) =>
+        onSettingsChange({ ...settings, lastScaleKeyMode })
+      }
+      onRangeLowChange={(lastScaleRangeLow) =>
+        onSettingsChange({ ...settings, lastScaleRangeLow })
+      }
+      onRangeHighChange={(lastScaleRangeHigh) =>
+        onSettingsChange({ ...settings, lastScaleRangeHigh })
+      }
+      onBack={() => navigate("/")}
+      onStartDrill={(scaleId, root, rangeLow, rangeHigh, randomOrder) => {
+        onStartDrill({ scaleId, root, rangeLow, rangeHigh, randomOrder });
+        navigate("/drill");
+      }}
+    />
+  );
+}
+
+function AllNotesRoute({ settings }: { settings: SessionSettings }) {
+  const navigate = useNavigate();
+  return (
+    <AllNotesPage
+      instrument={settings.instrument}
+      rangeLow={settings.rangeLow}
+      rangeHigh={settings.rangeHigh}
+      onBack={() => navigate("/")}
+    />
+  );
+}
+
+function LearnSheetMusicRoute() {
+  const navigate = useNavigate();
+  return <LearnSheetMusicPage onBack={() => navigate("/")} />;
+}
+
+function SettingsRoute({
+  settings,
+  onSettingsChange,
+}: {
+  settings: SessionSettings;
+  onSettingsChange: (next: SessionSettings) => void;
+}) {
+  const navigate = useNavigate();
+  return (
+    <SettingsPanel
       settings={settings}
-      onSettingsChange={setSettings}
-      onNavigate={setScreen}
+      onChange={onSettingsChange}
+      onBack={() => navigate("/")}
+    />
+  );
+}
+
+function CalibrateRoute({
+  settings,
+  onSettingsChange,
+}: {
+  settings: SessionSettings;
+  onSettingsChange: (next: SessionSettings) => void;
+}) {
+  const navigate = useNavigate();
+  return (
+    <CalibrationView
+      instrument={settings.instrument}
+      currentOffsetCents={settings.tuningOffsetCents}
+      onApply={(tuningOffsetCents) =>
+        onSettingsChange({ ...settings, tuningOffsetCents })
+      }
+      onBack={() => navigate("/")}
+    />
+  );
+}
+
+function DrillRoute({
+  settings,
+  onSettingsChange,
+  drillScale,
+}: {
+  settings: SessionSettings;
+  onSettingsChange: (next: SessionSettings) => void;
+  drillScale: DrillScaleState;
+}) {
+  const navigate = useNavigate();
+  return (
+    <ScaleDrillView
+      instrument={settings.instrument}
+      scaleId={drillScale.scaleId}
+      rootPitchClass={drillScale.root}
+      rangeLow={drillScale.rangeLow}
+      rangeHigh={drillScale.rangeHigh}
+      randomOrder={drillScale.randomOrder}
+      adaptiveWeight={settings.adaptiveWeight}
+      holdMs={settings.holdMs}
+      acceptanceThresholdCents={settings.acceptanceThresholdCents}
+      fingeringReveal={settings.fingeringReveal}
+      tuningOffsetCents={settings.tuningOffsetCents}
+      onTuningOffsetChange={(tuningOffsetCents) =>
+        onSettingsChange({ ...settings, tuningOffsetCents })
+      }
+      onExit={() => navigate("/")}
     />
   );
 }
@@ -169,12 +267,11 @@ function App() {
 function HomeScreen({
   settings,
   onSettingsChange,
-  onNavigate,
 }: {
-  settings: typeof DEFAULT_SETTINGS;
-  onSettingsChange: (next: typeof DEFAULT_SETTINGS) => void;
-  onNavigate: (screen: Screen) => void;
+  settings: SessionSettings;
+  onSettingsChange: (next: SessionSettings) => void;
 }) {
+  const navigate = useNavigate();
   const { status, error, note, start, stop } = useAudioPitch(
     calibratedA4Hz(settings.tuningOffsetCents),
   );
@@ -236,25 +333,16 @@ function HomeScreen({
         </p>
       </header>
 
-      <nav className="home-nav">
-        <button type="button" onClick={() => onNavigate("scales")}>
-          Scale drills
-        </button>
-        <button type="button" onClick={() => onNavigate("allNotes")}>
-          All notes &amp; fingerings
-        </button>
-        {sheetMusicBackendUp && (
-          <button type="button" onClick={() => onNavigate("learnSheetMusic")}>
+      {sheetMusicBackendUp && (
+        <nav className="home-nav">
+          <button
+            type="button"
+            onClick={() => navigate("/learn-sheet-music")}
+          >
             Learn sheet music
           </button>
-        )}
-        <button type="button" onClick={() => onNavigate("calibrate")}>
-          Calibrate mic
-        </button>
-        <button type="button" onClick={() => onNavigate("settings")}>
-          Settings
-        </button>
-      </nav>
+        </nav>
+      )}
 
       <section className="controls">
         <div className="instrument-selector">
@@ -262,7 +350,7 @@ function HomeScreen({
           <button
             type="button"
             className="link-button"
-            onClick={() => onNavigate("settings")}
+            onClick={() => navigate("/settings")}
           >
             {INSTRUMENTS[settings.instrument].label}
           </button>
@@ -324,7 +412,7 @@ function HomeScreen({
         <button
           type="button"
           className="link-button"
-          onClick={() => onNavigate("calibrate")}
+          onClick={() => navigate("/calibrate")}
         >
           Calibrate
         </button>
