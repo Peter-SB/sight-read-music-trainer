@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+python-multipart
+pymupdf
+music21
+oemer
+# oemer 0.1.8 predates opencv 5 — its Hough-line handling breaks on cv2 5.x
+# (IndexError in bbox.find_lines). Pin to the 4.x series.
+opencv-python-headless<5

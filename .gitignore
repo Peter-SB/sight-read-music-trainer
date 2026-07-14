@@ -22,3 +22,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Python
+__pycache__/
+venv/
+.venv/
+*.egg-info/
+
+# Backend: saved transcriptions (local data)
+backend/data/

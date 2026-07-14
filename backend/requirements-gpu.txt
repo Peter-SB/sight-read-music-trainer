@@ -1,0 +1,19 @@
+# Optional GPU acceleration for oemer's ONNX Runtime inference.
+#
+# Install ON TOP of requirements.txt to run OMR on an NVIDIA GPU (CUDA):
+#     pip install -r requirements.txt -r requirements-gpu.txt
+#
+# oemer already asks ONNX Runtime for the CUDA execution provider (falling back
+# to CPU). The default `onnxruntime-gpu` that oemer pulls (1.27) is built for
+# CUDA 13, whose runtime pip wheels aren't published yet — so we pin the CUDA-12
+# build and add the matching NVIDIA runtime + cuDNN 9 wheels. app/omr.py puts
+# these wheels' DLL directories on the oemer subprocess PATH automatically.
+#
+# Requires an NVIDIA GPU with a recent driver (CUDA >= 12 capable). On this
+# machine (RTX 3060 Ti) it cut a transcription from ~234 s to seconds.
+onnxruntime-gpu==1.22.0
+nvidia-cudnn-cu12>=9,<10
+nvidia-cublas-cu12
+nvidia-cuda-runtime-cu12
+nvidia-cufft-cu12
+nvidia-curand-cu12

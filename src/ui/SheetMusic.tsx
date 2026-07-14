@@ -32,6 +32,10 @@ const LEDGER_OVERHANG = 4;
 const SLOT_WIDTH = 40;
 /** Padding on the left and right of the whole staff. */
 const PAD_X = 20;
+/** Font size for the optional note-name label above each note. */
+const LABEL_FONT_SIZE = 10;
+/** Gap between a note head's top edge and its label's baseline. */
+const LABEL_GAP = LABEL_FONT_SIZE + 2;
 
 interface SheetMusicProps {
   /** Written note names to render, e.g. ["E4", "F#5", "Bb3"]. At least one. */
@@ -47,6 +51,8 @@ interface SheetMusicProps {
   width?: number;
   /** Extra class on the root `<svg>`, for caller-controlled sizing. */
   className?: string;
+  /** Print each note's name directly above its head. Default false. */
+  showNoteNames?: boolean;
 }
 
 /** y coordinate of a diatonic step. Higher pitch → smaller y (drawn upward). */
@@ -54,20 +60,21 @@ function yForStep(step: number): number {
   return (STAFF_TOP_STEP - step) * STEP_Y;
 }
 
-export function SheetMusic({ notes, width, className }: SheetMusicProps) {
+export function SheetMusic({ notes, width, className, showNoteNames }: SheetMusicProps) {
   const parsed = notes.map((name) => ({ name, staff: parseStaffNote(name) }));
 
   const slots = Math.max(width ?? notes.length, notes.length, 1);
   const contentWidth = slots * SLOT_WIDTH + PAD_X * 2;
 
   // Vertical extent: always include the whole staff, then grow to fit any
-  // note heads and ledger lines that sit outside it.
+  // note heads and ledger lines that sit outside it (plus the labels, if shown).
   let minY = yForStep(STAFF_TOP_STEP);
   let maxY = yForStep(STAFF_BOTTOM_STEP);
   for (const { staff } of parsed) {
     if (!staff) continue;
     const cy = yForStep(staff.diatonicStep);
-    minY = Math.min(minY, cy - HEAD_HEIGHT / 2);
+    const headTop = cy - HEAD_HEIGHT / 2;
+    minY = Math.min(minY, showNoteNames ? headTop - LABEL_GAP : headTop);
     maxY = Math.max(maxY, cy + HEAD_HEIGHT / 2);
     for (const ledger of ledgerStepsFor(staff.diatonicStep)) {
       minY = Math.min(minY, yForStep(ledger));
@@ -117,6 +124,17 @@ export function SheetMusic({ notes, width, className }: SheetMusicProps) {
         const cy = yForStep(staff.diatonicStep);
         return (
           <g key={i}>
+            {showNoteNames && (
+              <text
+                className="sheet-music__label"
+                x={cx}
+                y={cy - HEAD_HEIGHT / 2 - LABEL_GAP + LABEL_FONT_SIZE}
+                textAnchor="middle"
+                fontSize={LABEL_FONT_SIZE}
+              >
+                {name}
+              </text>
+            )}
             {ledgerStepsFor(staff.diatonicStep).map((ledger) => {
               const y = yForStep(ledger);
               return (

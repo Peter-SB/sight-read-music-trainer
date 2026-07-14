@@ -677,6 +677,197 @@
   margin-left: auto;
 }
 
+.sheet-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 480px;
+  width: 100%;
+}
+
+.sheet-upload__status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.sheet-upload__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.sheet-upload__field select,
+.sheet-upload__field input {
+  font: inherit;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+}
+
+.sheet-upload__hint {
+  font-size: 12px;
+  color: var(--text);
+  opacity: 0.75;
+  margin: 0;
+}
+
+.saved-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 640px;
+  width: 100%;
+}
+
+.saved-list__title {
+  margin: 0;
+  font-size: 15px;
+}
+
+.saved-list__items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.saved-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.saved-item__open {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  padding: 0;
+}
+
+.saved-item__name {
+  color: var(--text-h);
+  font-weight: 600;
+}
+
+.saved-item__meta {
+  font-size: 12px;
+  color: var(--text);
+  opacity: 0.8;
+}
+
+.saved-item__delete {
+  flex: none;
+}
+
+.sheet-result {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sheet-result__header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.sheet-result__controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.transpose-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.transpose-control__label {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.transpose-control__step {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--code-bg);
+  color: var(--text-h);
+  font: inherit;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.transpose-control__step:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.transpose-control__value {
+  min-width: 2.5em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-h);
+  font-weight: 600;
+}
+
+.sheet-result__meta {
+  font-size: 14px;
+  color: var(--text);
+  margin: 0;
+}
+
+.sheet-result__row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sheet-result__staff {
+  width: 100%;
+  height: auto;
+}
+
+.sheet-result__fingerings {
+  display: grid;
+  gap: 4px;
+  padding: 0 4%;
+}
+
+/* Shrink the (normally fixed-size) fingering diagrams to fit a compact grid cell. */
+.sheet-result__fingerings .fingering,
+.sheet-result__fingerings .fingering--empty,
+.sheet-result__fingerings .fingering--missing {
+  width: 100%;
+  height: 64px;
+  border-radius: 8px;
+  font-size: 9px;
+}
+
 .field {
   display: flex;
   flex-direction: column;
@@ -844,6 +1035,12 @@
   fill: var(--text);
   font-size: 18px;
   text-anchor: middle;
+}
+
+.sheet-music__label {
+  fill: var(--text-h);
+  font-weight: 600;
+  font-family: var(--sans);
 }
 
 @media (prefers-color-scheme: dark) {

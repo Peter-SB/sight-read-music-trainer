@@ -9,6 +9,8 @@ import { AccuracyBar } from "./ui/AccuracyBar";
 import { TuningSlider } from "./ui/TuningSlider";
 import { ScalesPage } from "./ui/ScalesPage";
 import { AllNotesPage } from "./ui/AllNotesPage";
+import { LearnSheetMusicPage } from "./ui/LearnSheetMusicPage";
+import { checkBackendHealth } from "./api/omrClient";
 import { SettingsPanel } from "./ui/SettingsPanel";
 import { ScaleDrillView } from "./ui/ScaleDrillView";
 import { CalibrationView } from "./ui/CalibrationView";
@@ -22,6 +24,7 @@ type Screen =
   | "home"
   | "scales"
   | "allNotes"
+  | "learnSheetMusic"
   | "settings"
   | "drill"
   | "calibrate";
@@ -91,6 +94,14 @@ function App() {
           rangeHigh={settings.rangeHigh}
           onBack={() => setScreen("home")}
         />
+      </main>
+    );
+  }
+
+  if (screen === "learnSheetMusic") {
+    return (
+      <main className="app">
+        <LearnSheetMusicPage onBack={() => setScreen("home")} />
       </main>
     );
   }
@@ -168,6 +179,17 @@ function HomeScreen({
     calibratedA4Hz(settings.tuningOffsetCents),
   );
 
+  const [sheetMusicBackendUp, setSheetMusicBackendUp] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    void checkBackendHealth().then((up) => {
+      if (!cancelled) setSheetMusicBackendUp(up);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const running = status === "running";
   const requesting = status === "requesting";
 
@@ -221,6 +243,11 @@ function HomeScreen({
         <button type="button" onClick={() => onNavigate("allNotes")}>
           All notes &amp; fingerings
         </button>
+        {sheetMusicBackendUp && (
+          <button type="button" onClick={() => onNavigate("learnSheetMusic")}>
+            Learn sheet music
+          </button>
+        )}
         <button type="button" onClick={() => onNavigate("calibrate")}>
           Calibrate mic
         </button>

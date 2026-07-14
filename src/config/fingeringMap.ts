@@ -74,8 +74,8 @@ export const FINGERING_TABLE: Record<string, KeyId[]> = {
   Db6: ['octave'], // approximate
   D6: ['octave', 'palmD'],
   Eb6: ['octave', 'palmD', 'palmEb'],
-  E6: ['octave', 'R1', 'palmD', 'palmEb'],
-  F6: ['octave', 'R1', 'palmD', 'palmEb', 'palmF', "sideC"],
+  E6: ['octave', 'sideC', 'palmD', 'palmEb'],
+  F6: ['octave', 'palmD', 'palmEb', 'palmF', "sideC" ],
 }
 
 /** Look up the keys pressed for a written note name (e.g. "Bb4"). */

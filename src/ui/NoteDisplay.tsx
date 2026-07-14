@@ -2,6 +2,7 @@ import type { NoteReading } from '../audio/types'
 import { formatNoteNameForDisplay } from '../audio/noteMapper'
 import { forDisplay } from '../audio/transposition'
 import type { InstrumentId } from '../config/instruments'
+import { SheetMusic } from './SheetMusic'
 
 /**
  * The centrepiece: the note currently being played, shown large. Displays the
@@ -35,10 +36,12 @@ export function NoteDisplay({ note, instrument, listening }: NoteDisplayProps) {
     written.cents === 0
       ? 'in tune'
       : `${written.cents > 0 ? '+' : ''}${written.cents}¢`
+  const displayName = formatNoteNameForDisplay(written.noteName)
 
   return (
     <div className="note-display">
-      <span className="note-name">{formatNoteNameForDisplay(written.noteName)}</span>
+      <span className="note-name">{displayName}</span>
+      <SheetMusic notes={[displayName]} className="note-display__staff" />
       <span className="note-detail">
         <span className={centsClass(written.cents)}>{centsLabel}</span>
         <span className="note-detail__sep">·</span>
