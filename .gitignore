@@ -33,5 +33,6 @@ venv/
 backend/data/
 
 # Claude Code 
-.agents
+.agents/
+.claude/
 skills-lock.json
