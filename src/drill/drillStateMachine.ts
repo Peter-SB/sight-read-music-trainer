@@ -89,7 +89,7 @@ function isCorrect(
   )
 }
 
-function advance(state: DrillState, getNextNote: NoteSource, now: number): DrillState {
+function advance(state: DrillState, getNextNote: NoteSource, _now: number): DrillState {
   const next = getNextNote(state.targetNote)
   if (next === null) {
     return {

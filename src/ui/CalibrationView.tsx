@@ -66,7 +66,10 @@ export function CalibrationView({
       CALIBRATION_TARGET_NOTES.map((written) => ({
         written,
         concert: toConcertNoteName(written, instrument),
-      })).filter((t): t is { written: string; concert: string } => t.concert !== null),
+      })).filter(
+        (t): t is { written: (typeof CALIBRATION_TARGET_NOTES)[number]; concert: string } =>
+          t.concert !== null,
+      ),
     [instrument],
   )
 
