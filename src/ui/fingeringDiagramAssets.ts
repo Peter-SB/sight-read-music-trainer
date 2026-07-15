@@ -47,7 +47,7 @@ import type { KeyId } from '../config/keys'
  * canvas, so we do the same, using coordinates read off the base outline art.
  */
 
-const IMAGE_ROOT = '/fingerings/saxaphone/fingering-parts-images'
+const IMAGE_ROOT = `${import.meta.env.BASE_URL}fingerings/saxaphone/fingering-parts-images`
 
 /** Pixel size of the base image and every highlight overlay (they're designed to stack exactly). */
 export const DIAGRAM_CANVAS = { width: 200, height: 520 }

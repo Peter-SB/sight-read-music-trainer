@@ -17,7 +17,7 @@ import {
  * shown as a small glyph to the left of the head.
  */
 
-const SEMIBREVE_SRC = "/images/1-1_note_semibreve.svg";
+const SEMIBREVE_SRC = `${import.meta.env.BASE_URL}images/1-1_note_semibreve.svg`;
 
 /** Half a staff space — the vertical distance per diatonic step. */
 const STEP_Y = 6;
