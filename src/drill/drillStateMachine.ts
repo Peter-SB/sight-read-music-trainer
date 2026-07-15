@@ -60,7 +60,7 @@ export const DEFAULT_DRILL_CONFIG: DrillConfig = {
   toleranceCents: 20,
   revealDelayMs: 1000,
   hintTimeoutMs: 4000,
-  advancePauseMs: 600,
+  advancePauseMs: 50,
 }
 
 export function createDrillState(getNextNote: NoteSource): DrillState {

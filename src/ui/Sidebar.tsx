@@ -91,13 +91,13 @@ export function Sidebar({ settings, onSettingsChange }: SidebarProps) {
         </label>
 
         <div className="sidebar__range-row">
-          <label className="field sidebar__field sidebar__field--high">
-            {!collapsed && <span>Highest</span>}
+          <label className="field sidebar__field sidebar__field--low">
+            {!collapsed && <span>Lowest</span>}
             <select
-              value={settings.rangeHigh}
-              title="Highest note"
+              value={settings.rangeLow}
+              title="Lowest note"
               onChange={(e) =>
-                onSettingsChange({ ...settings, rangeHigh: e.target.value })
+                onSettingsChange({ ...settings, rangeLow: e.target.value })
               }
             >
               {rangeOptions.map((note) => (
@@ -107,14 +107,13 @@ export function Sidebar({ settings, onSettingsChange }: SidebarProps) {
               ))}
             </select>
           </label>
-
-          <label className="field sidebar__field sidebar__field--low">
-            {!collapsed && <span>Lowest</span>}
+          <label className="field sidebar__field sidebar__field--high">
+            {!collapsed && <span>Highest</span>}
             <select
-              value={settings.rangeLow}
-              title="Lowest note"
+              value={settings.rangeHigh}
+              title="Highest note"
               onChange={(e) =>
-                onSettingsChange({ ...settings, rangeLow: e.target.value })
+                onSettingsChange({ ...settings, rangeHigh: e.target.value })
               }
             >
               {rangeOptions.map((note) => (
