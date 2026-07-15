@@ -81,10 +81,7 @@ function App() {
             path="all-notes"
             element={<AllNotesRoute settings={settings} />}
           />
-          <Route
-            path="learn-sheet-music"
-            element={<LearnSheetMusicRoute />}
-          />
+          <Route path="learn-sheet-music" element={<LearnSheetMusicRoute />} />
           <Route
             path="settings"
             element={
@@ -335,10 +332,7 @@ function HomeScreen({
 
       {sheetMusicBackendUp && (
         <nav className="home-nav">
-          <button
-            type="button"
-            onClick={() => navigate("/learn-sheet-music")}
-          >
+          <button type="button" onClick={() => navigate("/learn-sheet-music")}>
             Learn sheet music
           </button>
         </nav>

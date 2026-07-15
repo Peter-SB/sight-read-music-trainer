@@ -104,6 +104,9 @@ export function ScalesPage({
               </option>
             ))}
           </select>
+        </label>
+
+        <label className="field">
           {keyMode === "written" && root !== concertRoot && (
             <span className="field__hint">sounds concert {concertRoot}</span>
           )}
@@ -154,7 +157,7 @@ export function ScalesPage({
         <div className="scales-controls__actions">
           <button
             type="button"
-            className="mic-button"
+            className="mic-button mic-button--primary"
             disabled={sequence.length === 0}
             onClick={() =>
               onStartDrill(scaleId, concertRoot, rangeLow, rangeHigh, false)

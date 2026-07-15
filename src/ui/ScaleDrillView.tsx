@@ -59,7 +59,9 @@ export function ScaleDrillView({
   // Endless note source: sequential up-down walk when adaptive weighting is off,
   // otherwise a live-reweighted random draw biased toward slow-scoring notes.
   const noteSource = useMemo(() => {
-    if (adaptiveWeight > 0) return createAdaptiveNoteSource(pool, adaptiveWeight)
+    // Adaptive weighting only kicks in for random-order drills; a standard
+    // sequential drill always walks the pool low->high->low untouched.
+    if (randomOrder && adaptiveWeight > 0) return createAdaptiveNoteSource(pool, adaptiveWeight)
     const orderedPool = randomOrder ? shuffleSequence(pool) : pool
     return createSequentialNoteSource(orderedPool)
   }, [pool, adaptiveWeight, randomOrder])
@@ -118,7 +120,7 @@ export function ScaleDrillView({
         </button>
         <span className="drill__scale-label">
           {rootPitchClass} {SCALES[scaleId].label}
-          {adaptiveWeight === 0 && randomOrder ? ' · Random order' : ''}
+          {randomOrder ? (adaptiveWeight > 0 ? ' · Adaptive random' : ' · Random order') : ''}
         </span>
       </header>
 

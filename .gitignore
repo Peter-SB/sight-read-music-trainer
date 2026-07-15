@@ -31,3 +31,7 @@ venv/
 
 # Backend: saved transcriptions (local data)
 backend/data/
+
+# Claude Code 
+.agents
+skills-lock.json

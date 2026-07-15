@@ -69,6 +69,17 @@
   color: #fff;
 }
 
+.mic-button--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.mic-button--primary:hover:not(:disabled) {
+  background: var(--accent);
+  opacity: 0.9;
+}
+
 .mic-button--stop {
   border-color: var(--border);
   background: var(--code-bg);
@@ -223,7 +234,7 @@
 
 .sidebar {
   flex: none;
-  width: 220px;
+  width: 250px;
   height: 100%;
   position: sticky;
   top: 0;
@@ -293,7 +304,7 @@
 .sidebar__range-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 12px;
   margin-bottom: 16px;
 }
 
@@ -304,6 +315,7 @@
 
 .sidebar__field select {
   width: 100%;
+  min-width: 0;
   font-size: 12px;
   padding: 6px 4px;
 }
@@ -982,13 +994,37 @@
   color: var(--text);
 }
 
+.field > span:first-child {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text);
+  opacity: 0.75;
+}
+
 .field select {
   font: inherit;
-  padding: 8px 10px;
+  font-size: 14px;
+  padding: 9px 12px;
   border-radius: 8px;
   border: 1px solid var(--border);
   background: var(--bg);
   color: var(--text-h);
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.field select:hover {
+  border-color: var(--accent-border);
+}
+
+.field select:focus-visible {
+  outline: none;
+  border-color: var(--accent-border);
+  box-shadow: 0 0 0 3px var(--accent-bg);
 }
 
 .field__hint {
@@ -1000,13 +1036,17 @@
 .scales-controls {
   display: flex;
   align-items: flex-end;
-  gap: 16px;
+  gap: 20px 28px;
   flex-wrap: wrap;
+  padding: 0 0 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
 }
 
 .scales-controls__actions {
   display: flex;
-  gap: 8px;
+  gap: 10px;
+  margin-left: auto;
 }
 
 .settings {
